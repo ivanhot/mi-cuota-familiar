@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mi Cuota Familiar - SUNASS</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --c1:#0B7A6E;--c1d:#06574E;--c1l:#12B89E;--c1bg:#E6F7F4;
+  --acc:#E8982D;--acc2:#F5C66A;--accbg:#FFF5E0;
+  --bg:#F4F1EB;--white:#FFFFFF;--card:#FFFFFF;
+  --t1:#1A2B2A;--t2:#4A6360;--t3:#8FA5A2;--t4:#C2D1CF;
+  --red:#D64545;--redbg:#FDECEC;--green:#1CA676;--greenbg:#E2F8F0;
+  --brd:#DDE5E3;--sh:0 4px 20px rgba(11,122,110,0.08);
+  --r:16px;--r2:24px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--t1);-webkit-tap-highlight-color:transparent;}
+
+/* ===== HEADER ===== */
+.hdr{background:linear-gradient(135deg,var(--c1d) 0%,var(--c1) 60%,var(--c1l) 100%);color:#fff;padding:20px 16px;text-align:center;position:relative;overflow:hidden;}
+.hdr::after{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.07);}
+.hdr h1{font-size:1.5rem;font-weight:900;letter-spacing:-.5px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.hdr p{font-size:.78rem;opacity:.8;margin-top:4px;}
+.badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);padding:4px 14px;border-radius:20px;font-size:.7rem;font-weight:700;margin-top:8px;letter-spacing:.5px;text-transform:uppercase;}
+
+/* ===== PROGRESS BAR ===== */
+.prog-wrap{background:var(--white);border-bottom:1px solid var(--brd);padding:14px 16px 10px;position:sticky;top:0;z-index:100;}
+.prog-steps{display:flex;gap:6px;margin-bottom:8px;}
+.prog-dot{flex:1;height:8px;border-radius:4px;background:var(--t4);transition:background .3s;}
+.prog-dot.done{background:var(--green);}
+.prog-dot.active{background:var(--c1);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.prog-label{font-size:.75rem;font-weight:700;color:var(--t2);text-align:center;}
+
+/* ===== PAGES ===== */
+.page{display:none;padding:16px 16px 100px;max-width:700px;margin:0 auto;}
+.page.active{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ===== CARDS ===== */
+.cd{background:var(--card);border-radius:var(--r2);padding:24px 20px;box-shadow:var(--sh);border:1px solid var(--brd);margin-bottom:16px;}
+.cd-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.cd-title .ico{font-size:1.8rem;}
+.cd-title h2{font-size:1.1rem;font-weight:800;color:var(--c1d);}
+.cd-title small{display:block;font-size:.76rem;color:var(--t3);font-weight:600;margin-top:2px;}
+
+/* ===== FORM ===== */
+.fg{margin-bottom:18px;}
+.fg label{display:block;font-size:.82rem;font-weight:700;color:var(--t2);margin-bottom:6px;}
+.fg label .req{color:var(--red);}
+.fg input,.fg select,.fg textarea{
+  width:100%;padding:14px 16px;border:2px solid var(--brd);border-radius:14px;
+  font-size:1rem;font-family:inherit;background:var(--bg);outline:none;
+  transition:border .2s,box-shadow .2s;-webkit-appearance:none;
+}
+.fg input:focus,.fg select:focus{border-color:var(--c1);box-shadow:0 0 0 4px rgba(11,122,110,.12);}
+.fg .hint{font-size:.72rem;color:var(--t3);margin-top:4px;line-height:1.4;}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:400px){.fg-row{grid-template-columns:1fr;}}
+
+/* ===== BUTTONS ===== */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:16px 24px;border-radius:14px;font-size:1rem;font-weight:800;
+  font-family:inherit;cursor:pointer;border:none;transition:all .2s;
+  width:100%;text-align:center;min-height:56px;
+}
+.btn-go{background:var(--c1);color:#fff;}
+.btn-go:hover{background:var(--c1d);transform:translateY(-1px);}
+.btn-back{background:var(--bg);color:var(--t2);border:2px solid var(--brd);}
+.btn-back:hover{background:var(--brd);}
+.btn-acc{background:var(--acc);color:#fff;}
+.btn-acc:hover{background:#d08320;}
+.btn-danger{background:var(--redbg);color:var(--red);border:2px solid #F5C4C4;}
+.btn-sm{padding:10px 16px;font-size:.85rem;min-height:44px;width:auto;border-radius:12px;}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;}
+.btn-single{margin-top:20px;}
+
+/* ===== ALERT ===== */
+.alt{padding:16px;border-radius:var(--r);display:flex;gap:10px;font-size:.88rem;line-height:1.5;margin-bottom:16px;}
+.alt-info{background:var(--c1bg);border:1px solid #B2DFD9;color:var(--c1d);}
+.alt-warn{background:var(--accbg);border:1px solid var(--acc2);color:#7A5B1E;}
+.alt-ok{background:var(--greenbg);border:1px solid #A3E4CC;color:#0D5C3F;}
+.alt-bad{background:var(--redbg);border:1px solid #F5C4C4;color:#8B2020;}
+.alt .ai{font-size:1.3rem;flex-shrink:0;}
+
+/* ===== POA ACTIVITY CARD ===== */
+.act-card{
+  background:var(--bg);border:2px solid var(--brd);border-radius:var(--r);
+  padding:16px;margin-bottom:12px;transition:border .2s;
+}
+.act-card:focus-within{border-color:var(--c1);}
+.act-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px;}
+.act-name{font-size:.92rem;font-weight:700;color:var(--t1);flex:1;}
+.act-cat{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;}
+.cat-op{background:#D4F5F0;color:var(--c1d);}
+.cat-mt{background:#FFF0D4;color:#7A5B1E;}
+.cat-ad{background:#E8D4F5;color:#5B2D8E;}
+.cat-rp{background:#D4E8F5;color:#1E4A7A;}
+.act-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.act-fields .mini-fg label{font-size:.68rem;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:3px;display:block;}
+.act-fields .mini-fg input,.act-fields .mini-fg select{
+  width:100%;padding:10px;border:1.5px solid var(--brd);border-radius:10px;
+  font-size:.92rem;font-family:inherit;background:var(--white);outline:none;
+}
+.act-fields .mini-fg input:focus,.act-fields .mini-fg select:focus{border-color:var(--c1);}
+.act-total{
+  margin-top:10px;display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;background:var(--white);border-radius:10px;border:1px solid var(--brd);
+}
+.act-total .at-label{font-size:.78rem;color:var(--t3);font-weight:600;}
+.act-total .at-val{font-size:1.1rem;font-weight:800;color:var(--c1);}
+.act-fund{margin-top:8px;}
+.act-fund label{font-size:.72rem;font-weight:700;color:var(--t3);margin-bottom:4px;display:block;}
+.fund-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.fund-opt{
+  padding:10px;border-radius:10px;border:2px solid var(--brd);text-align:center;
+  font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s;background:var(--white);
+}
+.fund-opt.sel-cuota{border-color:var(--c1);background:var(--c1bg);color:var(--c1d);}
+.fund-opt.sel-aporte{border-color:var(--acc);background:var(--accbg);color:#7A5B1E;}
+.act-delete{
+  width:36px;height:36px;border-radius:10px;border:none;background:var(--redbg);
+  color:var(--red);font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+}
+.act-delete:hover{background:#F5C4C4;}
+.custom-tag{font-size:.6rem;background:var(--acc);color:#fff;padding:2px 6px;border-radius:4px;font-weight:800;margin-left:4px;}
+
+/* ===== CATEGORY SECTION ===== */
+.cat-section{margin-bottom:20px;}
+.cat-header{
+  display:flex;align-items:center;gap:8px;padding:14px 16px;
+  border-radius:var(--r);margin-bottom:10px;cursor:pointer;
+  font-weight:800;font-size:.92rem;
+}
+.cat-header.cat-op-h{background:#D4F5F0;color:var(--c1d);}
+.cat-header.cat-mt-h{background:#FFF0D4;color:#7A5B1E;}
+.cat-header.cat-ad-h{background:#E8D4F5;color:#5B2D8E;}
+.cat-header.cat-rp-h{background:#D4E8F5;color:#1E4A7A;}
+.cat-subtotal{
+  text-align:right;padding:8px 16px;font-size:.85rem;font-weight:800;color:var(--c1d);
+}
+
+/* ===== RESULT HERO ===== */
+.res-hero{
+  background:linear-gradient(135deg,var(--c1d),var(--c1));color:#fff;
+  border-radius:var(--r2);padding:32px 24px;text-align:center;margin-bottom:16px;
+  position:relative;overflow:hidden;
+}
+.res-hero::after{content:'';position:absolute;bottom:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.06);}
+.res-hero .lbl{font-size:.88rem;opacity:.85;}
+.res-hero .amt{font-size:3.2rem;font-weight:900;margin:8px 0;}
+.res-hero .sub{font-size:.82rem;opacity:.75;}
+.res-pill{display:inline-block;background:rgba(255,255,255,.18);padding:8px 20px;border-radius:12px;margin-top:10px;font-weight:700;font-size:.9rem;}
+
+/* ===== METRIC ===== */
+.met-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+.met{background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);padding:14px;text-align:center;}
+.met .mv{font-size:1.2rem;font-weight:800;color:var(--c1);}
+.met .ml{font-size:.7rem;color:var(--t3);font-weight:600;margin-top:2px;}
+.met-lg{grid-column:span 2;}
+.met-lg .mv{font-size:1.6rem;}
+
+/* ===== CHART ===== */
+.ch-wrap{position:relative;max-height:300px;margin:12px 0;}
+
+/* ===== POA SUMMARY TABLE ===== */
+.poa-sum{width:100%;border-collapse:separate;border-spacing:0;font-size:.78rem;margin:12px 0;border-radius:var(--r);overflow:hidden;border:1px solid var(--brd);}
+.poa-sum th{background:var(--c1);color:#fff;padding:10px 8px;text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+.poa-sum td{padding:9px 8px;border-bottom:1px solid var(--brd);background:var(--white);}
+.poa-sum .r-cat td{background:var(--c1bg);font-weight:800;color:var(--c1d);}
+.poa-sum .r-sub td{background:#F0F7F6;font-weight:800;}
+.poa-sum .r-tot td{background:var(--acc2);font-weight:900;font-size:.85rem;}
+.poa-sum .r-grand td{background:var(--c1);color:#fff;font-weight:900;font-size:.88rem;}
+.poa-sum .num{text-align:right;font-variant-numeric:tabular-nums;}
+.poa-sum .cuota-col{color:var(--c1);font-weight:800;}
+.poa-sum .aporte-col{color:var(--acc);font-weight:800;}
+
+/* ===== DOWNLOAD ===== */
+.dl-card{
+  border:2px solid var(--brd);border-radius:var(--r2);padding:24px 20px;
+  text-align:center;background:var(--white);margin-bottom:12px;
+  transition:all .2s;cursor:pointer;
+}
+.dl-card:active{transform:scale(.98);border-color:var(--c1);}
+.dl-card .di{font-size:2.5rem;margin-bottom:8px;}
+.dl-card h3{font-size:1rem;font-weight:800;color:var(--c1d);margin-bottom:4px;}
+.dl-card p{font-size:.78rem;color:var(--t3);line-height:1.4;}
+
+/* ===== BOTTOM NAV ===== */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;background:var(--white);
+  border-top:1px solid var(--brd);display:flex;z-index:200;
+  box-shadow:0 -2px 12px rgba(0,0,0,.06);padding:6px 0 env(safe-area-inset-bottom,4px);
+}
+.bnav button{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:8px 4px;border:none;background:none;cursor:pointer;
+  font-size:.62rem;font-weight:700;color:var(--t3);font-family:inherit;transition:color .2s;
+}
+.bnav button.active{color:var(--c1);}
+.bnav button .bi{font-size:1.3rem;}
+
+@media print{.bnav,.prog-wrap,.hdr,.btn,.no-print{display:none!important;}.page{display:block!important;padding:8px;}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>💧 Mi Cuota Familiar</h1>
+  <p>Calculadora gratuita para Organizaciones Comunales</p>
+  <div class="badge">Metodología SUNASS · RCD N° 028-2018</div>
+</div>
+
+<div class="prog-wrap" id="progWrap">
+  <div class="prog-steps">
+    <div class="prog-dot active" id="pd0"></div>
+    <div class="prog-dot" id="pd1"></div>
+    <div class="prog-dot" id="pd2"></div>
+    <div class="prog-dot" id="pd3"></div>
+    <div class="prog-dot" id="pd4"></div>
+  </div>
+  <div class="prog-label" id="progLabel">Paso 1 de 5 — Datos de tu OC</div>
+</div>
+
+<!-- ===================== PAGE 1: DATOS ===================== -->
+<div class="page active" id="p0">
+  <div class="cd">
+    <div class="cd-title"><span class="ico">👋</span><div><h2>¡Empecemos!</h2><small>Ingresa los datos básicos de tu organización comunal</small></div></div>
+    <div class="alt alt-info"><span class="ai">💡</span><div>Completa estos datos con calma. <strong>Puedes volver a modificarlos en cualquier momento</strong> si necesitas ajustar el cálculo final.</div></div>
+  </div>
+
+  <div class="cd">
+    <div class="cd-title"><span class="ico">🏘️</span><div><h2>Tu Organización</h2></div></div>
+    <div class="fg"><label>Nombre de la JASS u OC <span class="req">*</span></label><input type="text" id="dNombre" placeholder="Ej: JASS San Pedro"></div>
+    <div class="fg"><label>Centro Poblado <span class="req">*</span></label><input type="text" id="dCP" placeholder="Ej: San Pedro"></div>
+    <div class="fg-row">
+      <div class="fg"><label>Distrito</label><input type="text" id="dDist" placeholder="Ej: Ayaviri"></div>
+      <div class="fg"><label>Provincia</label><input type="text" id="dProv" placeholder="Ej: Melgar"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Departamento</label><input type="text" id="dDpto" placeholder="Ej: Puno"></div>
+      <div class="fg"><label>Año de cálculo</label><input type="number" id="dAnio" value="2025" min="2024" max="2035"></div>
+    </div>
+  </div>
+
+  <div class="cd">
+    <div class="cd-title"><span class="ico">👥</span><div><h2>Asociados</h2><small>¿Cuántas familias usan el servicio?</small></div></div>
+    <div class="fg"><label>Total de asociados (conexiones) <span class="req">*</span></label><input type="number" id="dNA" placeholder="Ej: 120" min="1"><span class="hint">Familias registradas en el padrón de asociados</span></div>
+    <div class="fg"><label>Asociados exonerados</label><input type="number" id="dNE" value="0" min="0"><span class="hint">Aprobados por Asamblea General que no pagan cuota</span></div>
+    <div class="fg"><label>Cuota que pagan actualmente (S/ por mes)</label><input type="number" id="dCuotaAct" step="0.01" placeholder="Ej: 5.00" min="0"><span class="hint">Si no pagan cuota aún, deja en 0</span></div>
+    <div class="fg"><label>¿Tienen medidores de agua?</label>
+      <select id="dMicro"><option value="no">No — Sin medidores</option><option value="si">Sí — Con medidores</option></select>
+    </div>
+  </div>
+
+  <div class="cd">
+    <div class="cd-title"><span class="ico">📉</span><div><h2>Morosidad (FIP)</h2><small>Factor de Incumplimiento de Pago</small></div></div>
+    <div class="alt alt-info"><span class="ai">ℹ️</span><div>Si no tienes estos datos, <strong>déjalos en 0</strong>. El FIP ajusta la cuota considerando quiénes no pagan a tiempo.</div></div>
+    <div class="fg-row">
+      <div class="fg"><label>Asociados morosos</label><input type="number" id="dAA" value="0" min="0"><span class="hint">Que adeudan 2+ meses</span></div>
+      <div class="fg"><label>Promedio meses de atraso</label><input type="number" id="dPCA" value="0" step="0.1" min="0"><span class="hint">Promedio de meses atrasados</span></div>
+    </div>
+  </div>
+
+  <div class="cd">
+    <div class="cd-title"><span class="ico">👤</span><div><h2>Presidente(a) de la OC</h2><small>Para el acta oficial</small></div></div>
+    <div class="fg"><label>Nombre completo</label><input type="text" id="dPres" placeholder="Ej: María López Quispe"></div>
+    <div class="fg"><label>DNI</label><input type="text" id="dDNI" placeholder="Ej: 12345678" maxlength="8"></div>
+  </div>
+
+  <button class="btn btn-go btn-single" onclick="goPage(1)">Continuar al POA →</button>
+</div>
+
+<!-- ===================== PAGE 2: POA ===================== -->
+<div class="page" id="p1">
+  <div class="cd">
+    <div class="cd-title"><span class="ico">📋</span><div><h2>Plan Operativo Anual</h2><small>Actividades y gastos para los próximos 12 meses</small></div></div>
+    <div class="alt alt-info"><span class="ai">📖</span><div>
+      Para cada actividad indica: el <strong>costo unitario</strong>, cuántas <strong>veces al año</strong> se realiza, y <strong>quién lo paga</strong> (cuota familiar o un aporte externo).<br><br>
+      👉 <strong>¿Tu actividad no aparece?</strong> Usa el botón "Agregar actividad" en cada categoría.
+    </div></div>
+  </div>
+
+  <div id="poaContainer"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="goPage(0)">← Datos</button>
+    <button class="btn btn-go" onclick="goPage(2)">Ver Presupuesto →</button>
+  </div>
+</div>
+
+<!-- ===================== PAGE 3: PRESUPUESTO ===================== -->
+<div class="page" id="p2">
+  <div class="cd">
+    <div class="cd-title"><span class="ico">💰</span><div><h2>Presupuesto Anual</h2><small>PA = CO + CM + CA + CR + RR</small></div></div>
+    <div id="presMetrics"></div>
+    <div class="alt alt-info"><span class="ai">📐</span><div>Reserva para rehabilitaciones menores: <strong>RR = 10% × (CO + CM + CA + CR)</strong></div></div>
+    <div class="ch-wrap"><canvas id="chCostos"></canvas></div>
+  </div>
+
+  <div class="cd">
+    <div class="cd-title"><span class="ico">🏦</span><div><h2>¿Quién paga qué?</h2><small>Cuota familiar vs. Aportes externos</small></div></div>
+    <div id="fuenteMetrics"></div>
+    <div class="ch-wrap"><canvas id="chFuentes"></canvas></div>
+  </div>
+
+  <div class="cd">
+    <div class="cd-title"><span class="ico">📋</span><div><h2>POA Resumido</h2><small>Con columnas de cuota familiar y aportes</small></div></div>
+    <div style="overflow-x:auto;" id="poaSumWrap"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="goPage(1)">← Editar POA</button>
+    <button class="btn btn-go" onclick="goPage(3)">Calcular Cuota →</button>
+  </div>
+</div>
+
+<!-- ===================== PAGE 4: RESULTADOS ===================== -->
+<div class="page" id="p3">
+  <div class="res-hero" id="resHero">
+    <div class="lbl">Cuota Familiar Calculada</div>
+    <div class="amt" id="rCF">S/ 0.00</div>
+    <div class="sub" id="rComp"></div>
+    <div class="res-pill">Subvención: <span id="rSub">0%</span></div>
+  </div>
+  <div id="rAlert"></div>
+
+  <div class="cd">
+    <div class="cd-title"><span class="ico">📐</span><div><h2>Fórmula Aplicada</h2></div></div>
+    <div style="background:var(--bg);padding:16px;border-radius:12px;font-family:monospace;font-size:.88rem;line-height:1.8;overflow-x:auto;" id="rFormula"></div>
+    <div style="margin-top:10px;font-size:.78rem;color:var(--t3);" id="rVars"></div>
+  </div>
+
+  <div class="cd">
+    <div class="cd-title"><span class="ico">📊</span><div><h2>Gráficos para tu Asamblea</h2></div></div>
+    <div class="ch-wrap"><canvas id="chResCostos"></canvas></div>
+    <div class="ch-wrap" style="margin-top:20px"><canvas id="chResFuentes"></canvas></div>
+  </div>
+
+  <div class="alt alt-ok"><span class="ai">💡</span><div><strong>¿Quieres ajustar el monto?</strong> Puedes regresar a cambiar los datos o las actividades del POA. El cálculo se rehará automáticamente.</div></div>
+
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="goPage(0)">← Modificar Datos</button>
+    <button class="btn btn-go" onclick="goPage(4)">Descargar Documentos →</button>
+  </div>
+  <button class="btn btn-back btn-single" onclick="goPage(1)" style="margin-top:8px">✏️ Modificar POA</button>
+</div>
+
+<!-- ===================== PAGE 5: DESCARGAS ===================== -->
+<div class="page" id="p4">
+  <div class="cd">
+    <div class="cd-title"><span class="ico">📥</span><div><h2>Descarga tus Documentos</h2><small>Listos para imprimir o llevar a tu Asamblea General</small></div></div>
+    <div class="alt alt-warn"><span class="ai">🖨️</span><div>Los archivos se descargan en HTML. Para convertirlos a PDF: <strong>abre el archivo → Ctrl+P (o menú Imprimir) → Guardar como PDF</strong>.</div></div>
+  </div>
+
+  <div class="dl-card" onclick="dlPOA()"><div class="di">📋</div><h3>Plan Operativo Anual (POA)</h3><p>Todas las actividades con costos, frecuencias y fuente de financiamiento</p></div>
+  <div class="dl-card" onclick="dlPresupuesto()"><div class="di">💰</div><h3>Presupuesto Anual (PA)</h3><p>Resumen de costos por categoría con cuota y aportes</p></div>
+  <div class="dl-card" onclick="dlActa()"><div class="di">📝</div><h3>Acta Oficial de Asamblea</h3><p>Formato N° 00 del Ministerio de Vivienda para aprobación de cuota familiar</p></div>
+  <div class="dl-card" onclick="dlResumen()"><div class="di">📊</div><h3>Resumen Visual con Gráficos</h3><p>Gráficos de torta y barras para presentar en asamblea</p></div>
+
+  <button class="btn btn-back btn-single" onclick="goPage(3)">← Volver a Resultados</button>
+  <button class="btn btn-go btn-single" onclick="goPage(0)" style="margin-top:8px">🔄 Empezar nuevo cálculo</button>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav" id="bnav">
+  <button onclick="goPage(0)" id="bn0" class="active"><span class="bi">🏘️</span>Datos</button>
+  <button onclick="goPage(1)" id="bn1"><span class="bi">📋</span>POA</button>
+  <button onclick="goPage(2)" id="bn2"><span class="bi">💰</span>Presup.</button>
+  <button onclick="goPage(3)" id="bn3"><span class="bi">📊</span>Resultado</button>
+  <button onclick="goPage(4)" id="bn4"><span class="bi">📥</span>Descargas</button>
+</nav>
+
+<script>
+// ===== STATE =====
+let D = {}; // form data
+let activities = []; // all POA activities
+let P = {}; // presupuesto calculated
+let R = {}; // resultado
+let charts = {};
+let currentPage = 0;
+const pageNames = ['Datos de tu OC','Plan Operativo Anual','Presupuesto','Resultado de Cuota','Descargas'];
+
+// ===== DEFAULT ACTIVITIES =====
+const defaultActs = [
+  {cat:'CO',name:'Cloro (líquido, pastillas, polvo)',cu:0,freq:12,fund:'cuota',custom:false},
+  {cat:'CO',name:'Reactivo DPD',cu:0,freq:12,fund:'cuota',custom:false},
+  {cat:'CO',name:'Otros insumos químicos',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CO',name:'Transporte de insumos',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CO',name:'Combustible / energía generador',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CO',name:'Electricidad (bombeo u otros)',cu:0,freq:12,fund:'cuota',custom:false},
+  {cat:'CO',name:'Pago al operador(es)',cu:0,freq:12,fund:'cuota',custom:false},
+  {cat:'CO',name:'Análisis de calidad de agua',cu:0,freq:0,fund:'aporte',custom:false},
+  {cat:'CO',name:'Operación eliminación de excretas',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CM',name:'Materiales (cemento, fierro, arena, pintura)',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CM',name:'Accesorios (tubos, codos, llaves, válvulas)',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CM',name:'Herramientas (pico, lampa, sierra)',cu:0,freq:0,fund:'aporte',custom:false},
+  {cat:'CM',name:'Equipo de protección personal',cu:0,freq:0,fund:'aporte',custom:false},
+  {cat:'CM',name:'Limpieza y desinfección del sistema',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CM',name:'Mantenimiento de micromedidores',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CM',name:'Mantenimiento eliminación de excretas',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CA',name:'Pago ANA (derecho de uso de agua)',cu:0,freq:1,fund:'cuota',custom:false},
+  {cat:'CA',name:'Impresiones, recibos, útiles de oficina',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CA',name:'Local (alquiler o mantenimiento)',cu:0,freq:12,fund:'cuota',custom:false},
+  {cat:'CA',name:'Personal administrativo (secretaria, etc.)',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CA',name:'Pasajes del Consejo Directivo',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CA',name:'Alimentación del Consejo Directivo',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CA',name:'Otras gestiones del Consejo Directivo',cu:0,freq:0,fund:'cuota',custom:false},
+  {cat:'CA',name:'Capacitación',cu:0,freq:0,fund:'aporte',custom:false},
+  {cat:'CR',name:'Reposición de equipos y piezas',cu:0,freq:0,fund:'cuota',custom:false},
+];
+
+function initActivities() {
+  activities = defaultActs.map((a,i) => ({...a, id: i}));
+}
+
+// ===== NAVIGATION =====
+function goPage(n) {
+  saveFormData();
+  if(n >= 2) calcPresupuesto();
+  if(n >= 3) calcCuota();
+  currentPage = n;
+  document.querySelectorAll('.page').forEach((p,i) => {p.classList.toggle('active', i===n);});
+  document.querySelectorAll('.bnav button').forEach((b,i) => {b.classList.toggle('active', i===n);});
+  for(let i=0;i<5;i++){
+    const d=document.getElementById('pd'+i);
+    d.classList.remove('done','active');
+    if(i<n) d.classList.add('done');
+    else if(i===n) d.classList.add('active');
+  }
+  document.getElementById('progLabel').textContent = `Paso ${n+1} de 5 — ${pageNames[n]}`;
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===1) renderPOA();
+  if(n===2) renderPresupuesto();
+  if(n===3) renderResultados();
+}
+
+// ===== SAVE FORM =====
+function saveFormData() {
+  D = {
+    nombre: v('dNombre'), cp: v('dCP'), dist: v('dDist'), prov: v('dProv'),
+    dpto: v('dDpto'), anio: v('dAnio') || '2025',
+    NA: int('dNA'), NE: int('dNE'), cuotaAct: fl('dCuotaAct'),
+    micro: v('dMicro'), AA: int('dAA'), PCA: fl('dPCA'),
+    pres: v('dPres'), dni: v('dDNI'),
+  };
+}
+function v(id){return document.getElementById(id)?.value||'';}
+function int(id){return parseInt(document.getElementById(id)?.value)||0;}
+function fl(id){return parseFloat(document.getElementById(id)?.value)||0;}
+
+// ===== RENDER POA =====
+function renderPOA() {
+  const cats = [
+    {key:'CO',label:'I. Costos de Operación (CO)',cls:'cat-op-h',tag:'cat-op'},
+    {key:'CM',label:'II. Costos de Mantenimiento (CM)',cls:'cat-mt-h',tag:'cat-mt'},
+    {key:'CA',label:'III. Costos de Administración (CA)',cls:'cat-ad-h',tag:'cat-ad'},
+    {key:'CR',label:'IV. Costos de Reposición (CR)',cls:'cat-rp-h',tag:'cat-rp'},
+  ];
+  let html = '';
+  cats.forEach(c => {
+    const items = activities.filter(a => a.cat === c.key);
+    html += `<div class="cat-section"><div class="cat-header ${c.cls}">${c.label}</div>`;
+    items.forEach(a => {
+      html += renderActCard(a, c.tag);
+    });
+    html += `<button class="btn btn-sm btn-back" onclick="addActivity('${c.key}')" style="margin:4px 0 16px;">＋ Agregar actividad a ${c.key}</button>`;
+    html += `</div>`;
+  });
+  document.getElementById('poaContainer').innerHTML = html;
+}
+
+function renderActCard(a, tagCls) {
+  const selC = a.fund==='cuota'?'sel-cuota':'';
+  const selA = a.fund==='aporte'?'sel-aporte':'';
+  const total = (a.cu * a.freq).toFixed(2);
+  const custTag = a.custom ? '<span class="custom-tag">PERSONALIZADA</span>' : '';
+  return `
+  <div class="act-card" id="act${a.id}">
+    <div class="act-head">
+      <div class="act-name">${a.name}${custTag}</div>
+      <span class="act-cat ${tagCls}">${a.cat}</span>
+      ${a.custom ? `<button class="act-delete" onclick="delActivity(${a.id})" title="Eliminar">✕</button>` : ''}
+    </div>
+    <div class="act-fields">
+      <div class="mini-fg"><label>Costo Unit. S/</label><input type="number" value="${a.cu}" step="0.01" min="0" onchange="updAct(${a.id},'cu',this.value)"></div>
+      <div class="mini-fg"><label>Veces/Año</label><input type="number" value="${a.freq}" min="0" onchange="updAct(${a.id},'freq',this.value)"></div>
+      <div class="mini-fg"><label>Total Anual</label><input type="text" value="S/ ${total}" readonly style="background:var(--white);font-weight:800;color:var(--c1);"></div>
+    </div>
+    <div class="act-fund">
+      <label>¿Quién lo paga?</label>
+      <div class="fund-row">
+        <div class="fund-opt ${selC}" onclick="setFund(${a.id},'cuota')">💧 Cuota Familiar</div>
+        <div class="fund-opt ${selA}" onclick="setFund(${a.id},'aporte')">🤝 Aporte Externo</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function updAct(id, field, val) {
+  const a = activities.find(x=>x.id===id);
+  if(!a) return;
+  a[field] = parseFloat(val)||0;
+  // update total display
+  const card = document.getElementById('act'+id);
+  if(card){
+    const inputs = card.querySelectorAll('.mini-fg input');
+    if(inputs[2]) inputs[2].value = `S/ ${(a.cu*a.freq).toFixed(2)}`;
+  }
+}
+
+function setFund(id, fund) {
+  const a = activities.find(x=>x.id===id);
+  if(!a) return;
+  a.fund = fund;
+  renderPOA();
+}
+
+function addActivity(cat) {
+  const name = prompt('Nombre de la nueva actividad:');
+  if(!name || !name.trim()) return;
+  const newId = activities.length > 0 ? Math.max(...activities.map(a=>a.id)) + 1 : 0;
+  activities.push({id:newId, cat, name:name.trim(), cu:0, freq:0, fund:'cuota', custom:true});
+  renderPOA();
+}
+
+function delActivity(id) {
+  if(!confirm('¿Eliminar esta actividad?')) return;
+  activities = activities.filter(a=>a.id!==id);
+  renderPOA();
+}
+
+// ===== CALCULO PRESUPUESTO =====
+function calcPresupuesto() {
+  let co=0,cm=0,ca=0,cr=0;
+  let coCuota=0,cmCuota=0,caCuota=0,crCuota=0;
+  let coAporte=0,cmAporte=0,caAporte=0,crAporte=0;
+  activities.forEach(a => {
+    const t = a.cu * a.freq;
+    const isCuota = a.fund === 'cuota';
+    switch(a.cat){
+      case 'CO': co+=t; if(isCuota)coCuota+=t; else coAporte+=t; break;
+      case 'CM': cm+=t; if(isCuota)cmCuota+=t; else cmAporte+=t; break;
+      case 'CA': ca+=t; if(isCuota)caCuota+=t; else caAporte+=t; break;
+      case 'CR': cr+=t; if(isCuota)crCuota+=t; else crAporte+=t; break;
+    }
+  });
+  const rr = 0.10*(co+cm+ca+cr);
+  const totalCuota = coCuota+cmCuota+caCuota+crCuota;
+  const totalAporte = coAporte+cmAporte+caAporte+crAporte;
+  const rrCuota = totalCuota > 0 ? rr * (totalCuota/(totalCuota+totalAporte||1)) : rr;
+  const rrAporte = rr - rrCuota;
+  const pa = co+cm+ca+cr+rr;
+  const paCuota = totalCuota + rrCuota;
+  const paAporte = totalAporte + rrAporte;
+
+  P = {co,cm,ca,cr,rr,pa, coCuota,cmCuota,caCuota,crCuota,
+    coAporte,cmAporte,caAporte,crAporte, rrCuota, rrAporte,
+    totalCuota:paCuota, totalAporte:paAporte};
+}
+
+// ===== RENDER PRESUPUESTO =====
+function renderPresupuesto() {
+  const {co,cm,ca,cr,rr,pa} = P;
+  document.getElementById('presMetrics').innerHTML = `
+    <div class="met-grid">
+      <div class="met"><div class="ml">Operación</div><div class="mv">S/ ${co.toFixed(2)}</div></div>
+      <div class="met"><div class="ml">Mantenimiento</div><div class="mv">S/ ${cm.toFixed(2)}</div></div>
+      <div class="met"><div class="ml">Administración</div><div class="mv">S/ ${ca.toFixed(2)}</div></div>
+      <div class="met"><div class="ml">Reposición</div><div class="mv">S/ ${cr.toFixed(2)}</div></div>
+      <div class="met"><div class="ml">Reserva Rehab. (10%)</div><div class="mv">S/ ${rr.toFixed(2)}</div></div>
+      <div class="met met-lg" style="border:2px solid var(--c1)"><div class="ml">PRESUPUESTO TOTAL (PA)</div><div class="mv">S/ ${pa.toFixed(2)}</div></div>
+    </div>`;
+
+  const pctC = pa>0?((P.totalCuota/pa)*100):0;
+  const pctA = pa>0?((P.totalAporte/pa)*100):0;
+  document.getElementById('fuenteMetrics').innerHTML = `
+    <div class="met-grid">
+      <div class="met" style="border:2px solid var(--c1)"><div class="ml">💧 Cuota Familiar</div><div class="mv">S/ ${P.totalCuota.toFixed(2)}</div><div class="ml">${pctC.toFixed(1)}%</div></div>
+      <div class="met" style="border:2px solid var(--acc)"><div class="ml">🤝 Aportes Externos</div><div class="mv" style="color:var(--acc)">S/ ${P.totalAporte.toFixed(2)}</div><div class="ml">${pctA.toFixed(1)}%</div></div>
+    </div>`;
+
+  renderCh('chCostos','doughnut',{labels:['Operación','Mantenimiento','Administración','Reposición','Reserva'],datasets:[{data:[co,cm,ca,cr,rr],backgroundColor:['#0B7A6E','#E8982D','#8E44AD','#2980B9','#1CA676'],borderWidth:2,borderColor:'#fff'}]},'Distribución de Costos');
+  renderCh('chFuentes','pie',{labels:['Cuota Familiar','Aportes Externos'],datasets:[{data:[P.totalCuota,P.totalAporte],backgroundColor:['#0B7A6E','#E8982D'],borderWidth:2,borderColor:'#fff'}]},'Fuentes de Financiamiento');
+
+  // POA Summary Table
+  buildPOASummary();
+}
+
+function buildPOASummary() {
+  const cats = [
+    {key:'CO',label:'I. OPERACIÓN'},
+    {key:'CM',label:'II. MANTENIMIENTO'},
+    {key:'CA',label:'III. ADMINISTRACIÓN'},
+    {key:'CR',label:'IV. REPOSICIÓN'},
+  ];
+  let rows = '';
+  let grandTotal=0, grandCuota=0, grandAporte=0;
+  cats.forEach(c => {
+    rows += `<tr class="r-cat"><td colspan="6">${c.label}</td></tr>`;
+    let subT=0, subC=0, subA=0;
+    activities.filter(a=>a.cat===c.key).forEach(a => {
+      const t = a.cu*a.freq;
+      if(t<=0) return;
+      const tc = a.fund==='cuota'?t:0;
+      const ta = a.fund==='aporte'?t:0;
+      subT+=t; subC+=tc; subA+=ta;
+      rows += `<tr><td>${a.name}${a.custom?'<span class="custom-tag">NUEVA</span>':''}</td><td class="num">S/ ${a.cu.toFixed(2)}</td><td class="num">${a.freq}</td><td class="num">S/ ${t.toFixed(2)}</td><td class="num cuota-col">S/ ${tc.toFixed(2)}</td><td class="num aporte-col">S/ ${ta.toFixed(2)}</td></tr>`;
+    });
+    rows += `<tr class="r-sub"><td colspan="3">Subtotal ${c.label}</td><td class="num">S/ ${subT.toFixed(2)}</td><td class="num cuota-col">S/ ${subC.toFixed(2)}</td><td class="num aporte-col">S/ ${subA.toFixed(2)}</td></tr>`;
+    grandTotal+=subT; grandCuota+=subC; grandAporte+=subA;
+  });
+  // RR row
+  const {rr, rrCuota, rrAporte} = P;
+  rows += `<tr class="r-tot"><td colspan="3">Reserva Rehab. Menores (RR=10%)</td><td class="num">S/ ${rr.toFixed(2)}</td><td class="num cuota-col">S/ ${rrCuota.toFixed(2)}</td><td class="num aporte-col">S/ ${rrAporte.toFixed(2)}</td></tr>`;
+  grandTotal+=rr; grandCuota+=rrCuota; grandAporte+=rrAporte;
+  rows += `<tr class="r-grand"><td colspan="3">PRESUPUESTO TOTAL (PA)</td><td class="num">S/ ${grandTotal.toFixed(2)}</td><td class="num">S/ ${grandCuota.toFixed(2)}</td><td class="num">S/ ${grandAporte.toFixed(2)}</td></tr>`;
+
+  document.getElementById('poaSumWrap').innerHTML = `
+    <table class="poa-sum"><thead><tr><th>Actividad</th><th>C.Unit.</th><th>Frec.</th><th>Total</th><th>💧 Cuota</th><th>🤝 Aporte</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ===== CALCULO CUOTA =====
+function calcCuota() {
+  const {NA, NE, AA, PCA, cuotaAct, micro} = D;
+  let FIP = 0;
+  if(AA>0 && NA>0) FIP = (PCA/12)*(AA/NA);
+  FIP = Math.min(FIP, 0.99);
+  const paCuota = P.totalCuota;
+  const denom = 12*(1-FIP)*(NA-NE);
+  let CF = denom>0 ? paCuota/denom : 0;
+  CF = Math.round(CF*100)/100;
+  const subvencion = P.pa>0 ? (P.totalAporte/P.pa)*100 : 0;
+  R = {CF, FIP, paCuota, subvencion};
+}
+
+// ===== RENDER RESULTADOS =====
+function renderResultados() {
+  const {CF, FIP, paCuota, subvencion} = R;
+  const {cuotaAct, NA, NE} = D;
+  document.getElementById('rCF').textContent = `S/ ${CF.toFixed(2)}`;
+  let comp = '';
+  if(cuotaAct>0){
+    const diff = CF - cuotaAct;
+    const pct = ((diff/cuotaAct)*100).toFixed(1);
+    comp = diff>0 ? `+S/ ${diff.toFixed(2)} (${pct}% más que S/ ${cuotaAct.toFixed(2)} actual)` :
+           diff<0 ? `S/ ${diff.toFixed(2)} (${Math.abs(pct)}% menos que S/ ${cuotaAct.toFixed(2)} actual)` :
+           `Igual a la cuota actual`;
+  }
+  document.getElementById('rComp').textContent = comp;
+  document.getElementById('rSub').textContent = `${subvencion.toFixed(1)}%`;
+
+  let alertH = '';
+  if(subvencion>50) alertH=`<div class="alt alt-warn"><span class="ai">⚡</span><div><strong>Nivel Alto de Subvención (${subvencion.toFixed(1)}%)</strong><br>El sistema depende mucho de aportes externos. Evalúe la sostenibilidad y considere ajustes graduales.</div></div>`;
+  else if(subvencion>20) alertH=`<div class="alt alt-info"><span class="ai">📊</span><div><strong>Nivel Moderado de Subvención (${subvencion.toFixed(1)}%)</strong><br>La cuota familiar cubre la mayor parte del presupuesto.</div></div>`;
+  else alertH=`<div class="alt alt-ok"><span class="ai">💪</span><div><strong>Alta Autonomía Financiera</strong><br>La cuota cubre el ${(100-subvencion).toFixed(1)}% del presupuesto. ¡Muy bien!</div></div>`;
+  document.getElementById('rAlert').innerHTML = alertH;
+
+  document.getElementById('rFormula').innerHTML = D.micro==='no' ?
+    `CF = PA_Cuota / [12 × (1 - FIP) × (NA - NE)]<br><br>CF = ${paCuota.toFixed(2)} / [12 × (1 - ${FIP.toFixed(4)}) × (${NA} - ${NE})]<br><br><strong style="font-size:1.2rem">CF = S/ ${CF.toFixed(2)} por mes</strong>` :
+    `Con micromedición se aplica la fórmula del Anexo N° 4 de la RCD 028-2018.`;
+  document.getElementById('rVars').innerHTML = `PA_Cuota = S/ ${paCuota.toFixed(2)} · FIP = ${FIP.toFixed(4)} · NA = ${NA} · NE = ${NE}`;
+
+  const {co,cm,ca,cr,rr} = P;
+  renderCh('chResCostos','bar',{labels:['Operación','Mantenim.','Admin.','Reposición','Reserva'],datasets:[{label:'Soles/año',data:[co,cm,ca,cr,rr],backgroundColor:['#0B7A6E','#E8982D','#8E44AD','#2980B9','#1CA676'],borderRadius:8,borderSkipped:false}]},'Costos por Categoría','bar');
+  renderCh('chResFuentes','doughnut',{labels:['💧 Cuota Familiar','🤝 Aportes Externos'],datasets:[{data:[P.totalCuota,P.totalAporte],backgroundColor:['#0B7A6E','#E8982D'],borderWidth:3,borderColor:'#fff'}]},'Financiamiento');
+}
+
+// ===== CHART HELPER =====
+function renderCh(id,type,data,title,ctype) {
+  if(charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  const cfg = {type:ctype||type,data,options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{padding:12,usePointStyle:true,font:{size:11,family:'Nunito'}}},title:{display:!!title,text:title,font:{size:13,weight:'bold',family:'Nunito'},padding:{bottom:12}}}}};
+  if(ctype==='bar') cfg.options.scales={y:{beginAtZero:true,ticks:{callback:v=>'S/ '+v.toLocaleString(),font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10}}}};
+  charts[id] = new Chart(ctx,cfg);
+}
+
+// ===== DOWNLOADS =====
+function css(){return `body{font-family:'Segoe UI',Tahoma,sans-serif;color:#1A2B2A;margin:0;padding:28px;line-height:1.6;max-width:800px;margin:0 auto}h1{color:#0B7A6E;border-bottom:3px solid #0B7A6E;padding-bottom:8px;font-size:1.3rem}h2{color:#06574E;font-size:1rem;margin-top:20px}table{width:100%;border-collapse:collapse;font-size:.8rem;margin:12px 0}th{background:#0B7A6E;color:#fff;padding:8px;text-align:left;font-size:.72rem;text-transform:uppercase}td{padding:7px 8px;border-bottom:1px solid #DDE5E3}.cat td{background:#E6F7F4;font-weight:800;color:#06574E}.sub td{background:#F0F7F6;font-weight:800}.tot td{background:#F5C66A;font-weight:900}.grand td{background:#0B7A6E;color:#fff;font-weight:900}.num{text-align:right;font-variant-numeric:tabular-nums}.cuota{color:#0B7A6E;font-weight:700}.aporte{color:#E8982D;font-weight:700}.hdr-box{background:#E6F7F4;padding:14px;border-radius:8px;margin-bottom:16px;font-size:.88rem}.metric{display:inline-block;background:#F4F1EB;border:1px solid #DDE5E3;border-radius:8px;padding:10px 18px;margin:4px;text-align:center}.metric .v{font-size:1.2rem;font-weight:800;color:#0B7A6E}.metric .l{font-size:.7rem;color:#8FA5A2}.alert{padding:12px;border-radius:8px;margin:12px 0;font-size:.82rem}.alert-w{background:#FFF5E0;border:1px solid #F5C66A;color:#7A5B1E}.alert-g{background:#E2F8F0;border:1px solid #A3E4CC;color:#0D5C3F}.foot{margin-top:24px;padding-top:12px;border-top:2px solid #0B7A6E;font-size:.72rem;color:#8FA5A2;text-align:center}@media print{body{padding:16px;font-size:.78rem}table{page-break-inside:avoid}}`;}
+function hdr(){return `<div class="hdr-box"><strong>${D.nombre||'Organización Comunal'}</strong><br>Centro Poblado: ${D.cp||'___'} · Distrito: ${D.dist||'___'} · Provincia: ${D.prov||'___'} · Departamento: ${D.dpto||'___'}<br>Año: ${D.anio||'2025'} · Asociados: ${D.NA||0} · Exonerados: ${D.NE||0}</div>`;}
+
+function dlPOA(){
+  let rows='';
+  let gT=0,gC=0,gA=0;
+  [{key:'CO',l:'I. OPERACIÓN'},{key:'CM',l:'II. MANTENIMIENTO'},{key:'CA',l:'III. ADMINISTRACIÓN'},{key:'CR',l:'IV. REPOSICIÓN'}].forEach(c=>{
+    rows+=`<tr class="cat"><td colspan="6">${c.l}</td></tr>`;
+    let sT=0,sC=0,sA=0;
+    activities.filter(a=>a.cat===c.key).forEach(a=>{
+      const t=a.cu*a.freq;if(t<=0)return;
+      const tc=a.fund==='cuota'?t:0,ta=a.fund==='aporte'?t:0;
+      sT+=t;sC+=tc;sA+=ta;
+      rows+=`<tr><td>${a.name}${a.custom?' (*)':''}</td><td class="num">S/ ${a.cu.toFixed(2)}</td><td class="num">${a.freq}</td><td class="num">S/ ${t.toFixed(2)}</td><td class="num cuota">S/ ${tc.toFixed(2)}</td><td class="num aporte">S/ ${ta.toFixed(2)}</td></tr>`;
+    });
+    rows+=`<tr class="sub"><td colspan="3">Subtotal ${c.l}</td><td class="num">S/ ${sT.toFixed(2)}</td><td class="num cuota">S/ ${sC.toFixed(2)}</td><td class="num aporte">S/ ${sA.toFixed(2)}</td></tr>`;
+    gT+=sT;gC+=sC;gA+=sA;
+  });
+  const {rr,rrCuota,rrAporte}=P;
+  rows+=`<tr class="tot"><td colspan="3">Reserva Rehab. (RR=10%)</td><td class="num">S/ ${rr.toFixed(2)}</td><td class="num cuota">S/ ${rrCuota.toFixed(2)}</td><td class="num aporte">S/ ${rrAporte.toFixed(2)}</td></tr>`;
+  gT+=rr;gC+=rrCuota;gA+=rrAporte;
+  rows+=`<tr class="grand"><td colspan="3">PRESUPUESTO TOTAL (PA)</td><td class="num">S/ ${gT.toFixed(2)}</td><td class="num">S/ ${gC.toFixed(2)}</td><td class="num">S/ ${gA.toFixed(2)}</td></tr>`;
+  dl(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>POA ${D.nombre||'OC'}</title><style>${css()}</style></head><body><h1>📋 Plan Operativo Anual (POA) – ${D.anio||'2025'}</h1>${hdr()}<p>Actividades programadas por 12 meses según RCD N° 028-2018-SUNASS-CD. (*) Actividades personalizadas.</p><table><thead><tr><th>Actividad</th><th>C.Unit.</th><th>Frec.</th><th>Total</th><th>💧Cuota</th><th>🤝Aporte</th></tr></thead><tbody>${rows}</tbody></table><div class="alert alert-w">PA = CO + CM + CA + CR + RR · RR = 10% × (CO+CM+CA+CR)</div><div class="foot">💧 Mi Cuota Familiar · Metodología SUNASS</div></body></html>`,`POA_${D.nombre||'OC'}_${D.anio||'2025'}.html`);
+}
+
+function dlPresupuesto(){
+  const {co,cm,ca,cr,rr,pa}=P;
+  const pctC=pa>0?((P.totalCuota/pa)*100).toFixed(1):'0';
+  const pctA=pa>0?((P.totalAporte/pa)*100).toFixed(1):'0';
+  dl(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Presupuesto ${D.nombre||'OC'}</title><style>${css()}</style></head><body><h1>💰 Presupuesto Anual – ${D.anio||'2025'}</h1>${hdr()}<h2>Costos por Categoría</h2><div style="text-align:center"><div class="metric"><div class="l">Operación</div><div class="v">S/ ${co.toFixed(2)}</div></div><div class="metric"><div class="l">Mantenimiento</div><div class="v">S/ ${cm.toFixed(2)}</div></div><div class="metric"><div class="l">Administración</div><div class="v">S/ ${ca.toFixed(2)}</div></div><div class="metric"><div class="l">Reposición</div><div class="v">S/ ${cr.toFixed(2)}</div></div><div class="metric"><div class="l">Reserva (10%)</div><div class="v">S/ ${rr.toFixed(2)}</div></div><div class="metric" style="border:2px solid #0B7A6E"><div class="l">TOTAL PA</div><div class="v" style="font-size:1.5rem">S/ ${pa.toFixed(2)}</div></div></div><h2>Fuentes de Financiamiento</h2><table><tr><th>Fuente</th><th>Monto</th><th>%</th></tr><tr><td>💧 Cuota Familiar</td><td class="num">S/ ${P.totalCuota.toFixed(2)}</td><td class="num">${pctC}%</td></tr><tr><td>🤝 Aportes Externos</td><td class="num">S/ ${P.totalAporte.toFixed(2)}</td><td class="num">${pctA}%</td></tr><tr class="grand"><td>TOTAL</td><td class="num">S/ ${pa.toFixed(2)}</td><td class="num">100%</td></tr></table><h2>Fórmulas</h2><p><strong>PA = CO + CM + CA + CR + RR</strong><br>PA = ${co.toFixed(2)} + ${cm.toFixed(2)} + ${ca.toFixed(2)} + ${cr.toFixed(2)} + ${rr.toFixed(2)} = <strong>S/ ${pa.toFixed(2)}</strong><br>RR = 10% × ${(co+cm+ca+cr).toFixed(2)} = <strong>S/ ${rr.toFixed(2)}</strong></p><div class="foot">💧 Mi Cuota Familiar · Metodología SUNASS</div></body></html>`,`Presupuesto_${D.nombre||'OC'}_${D.anio||'2025'}.html`);
+}
+
+function dlActa(){
+  const CF=R.CF||0;
+  const w=numWords(CF);
+  dl(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Acta ${D.nombre||'OC'}</title><style>body{font-family:'Times New Roman',serif;color:#000;padding:40px 50px;line-height:1.9;font-size:12pt}h2{text-align:center;font-size:12pt;margin:0 0 16px}.tbl{width:100%;border-collapse:collapse;margin-bottom:16px}.tbl td{border:1px solid #000;padding:8px;text-align:center;font-weight:bold;font-size:11pt}.blank{border-bottom:1px dotted #666;display:inline-block;min-width:180px;padding:0 6px}p{text-align:justify;margin:6px 0}li{font-weight:bold;margin:4px 0}.firma{display:inline-block;width:44%;text-align:center;margin:30px 2% 16px;vertical-align:top}.firma-l{border-top:1px solid #000;padding-top:4px;margin-top:50px}.highlight{background:#E6F7F4;padding:14px;border-radius:8px;border:2px solid #0B7A6E;margin:16px 0}@media print{body{padding:20px 30px}}</style></head><body><table class="tbl"><tr><td style="width:28%">FORMATO N° 00</td><td>ACTA DE ASAMBLEA GENERAL DE LOS ASOCIADOS PARA LA APROBACIÓN DE LA CUOTA FAMILIAR</td></tr></table><p>En el marco del Texto Único Ordenado del Decreto Legislativo N° 1280, Ley Marco de la Gestión y Prestación de los Servicios de Saneamiento, aprobado por el Decreto Supremo N° 001-2025-VIVIENDA, y de la "Metodología para la fijación del valor de la cuota familiar por la prestación de los servicios de saneamiento brindados por organizaciones comunales", aprobada mediante Resolución de Consejo Directivo N° 028-2018-SUNASS-CD, la cuota familiar es aprobada anualmente por la Asamblea General de la Organización Comunal.</p><p>En el centro poblado <span class="blank">${D.cp||'&nbsp;'}</span>, del distrito <span class="blank">${D.dist||'&nbsp;'}</span>, de la provincia de <span class="blank">${D.prov||'&nbsp;'}</span>, del departamento de <span class="blank">${D.dpto||'&nbsp;'}</span>, siendo las <span class="blank">&nbsp;</span> horas del día <span class="blank">&nbsp;</span> de <span class="blank">&nbsp;</span> de ${D.anio||'20__'}, se reunieron los asociados y las autoridades del prestador rural: <span class="blank">${D.nombre||'&nbsp;'}</span>, siendo representado por el Sr.(a) <span class="blank">${D.pres||'&nbsp;'}</span>, identificado con D.N.I. Nº <span class="blank">${D.dni||'&nbsp;'}</span>, en calidad de <span class="blank">Presidente(a) de la O.C.</span></p><p>Con la asistencia de <span class="blank">&nbsp;</span> hombres y <span class="blank">&nbsp;</span> mujeres que representan el <span class="blank">&nbsp;</span>% del total de los asociados (representando a la mayoría de asociados) se apertura la asamblea general, con la finalidad de tratar la siguiente agenda:</p><ul><li>Aprobación del Plan Operativo Anual (POA)</li><li>Aprobación del Presupuesto Anual (PA)</li><li>Aprobación de la Cuota Familiar; año ${D.anio||'____'}</li></ul><p>La asamblea se desarrolló con la presentación del Plan Operativo Anual, el Presupuesto Anual para cubrir los costos de administración, operación, mantenimiento y reposición del sistema de agua y la metodología aprobada por SUNASS.</p><p>Después de haberse desarrollado los temas de la agenda y absueltas las interrogantes planteadas; con el voto unánime o mayoritario de <span class="blank">&nbsp;</span> asociados, equivalente a <span class="blank">&nbsp;</span>% del total de asociados, se aprueba lo siguiente:</p><div class="highlight"><p>Aportar la cuota familiar cuyo importe mensual es de <strong>${w}</strong> y 00/100 soles (<strong>S/ ${CF.toFixed(2)}</strong>) por asociado para la administración, operación, mantenimiento y reposición del sistema, el cual estará a cargo de la Organización Comunal. Este aporte empezaremos a hacerlo efectivo a partir del siguiente mes de aprobada la cuota para el año ${D.anio||'____'}.</p></div><p>Siendo las <span class="blank">&nbsp;</span> horas del día <span class="blank">&nbsp;</span> de <span class="blank">&nbsp;</span> de ${D.anio||'20__'}, se da lectura a los acuerdos tomados en la Asamblea General y después de aprobada <strong>POR UNANIMIDAD/MAYORÍA</strong>, se da por concluida y levantada la presente Asamblea, firmando los presentes:</p><div style="text-align:center;margin-top:30px"><div class="firma"><div class="firma-l">PRESIDENTE(A) DE LA OC<br>${D.pres||'_______________'}<br>DNI: ${D.dni||'_______________'}</div></div><div class="firma"><div class="firma-l">SECRETARIO(A)<br>Nombres: _______________<br>DNI: _______________</div></div><div class="firma"><div class="firma-l">TESORERO(A)<br>Nombres: _______________<br>DNI: _______________</div></div><div class="firma"><div class="firma-l">FISCAL<br>Nombres: _______________<br>DNI: _______________</div></div></div><p style="text-align:center;margin-top:24px;font-size:9pt;color:#888">Formato del Ministerio de Vivienda · D.S. N° 001-2025-VIVIENDA · RCD N° 028-2018-SUNASS-CD</p></body></html>`,`Acta_${D.nombre||'OC'}_${D.anio||'2025'}.html`);
+}
+
+function dlResumen(){
+  const {co,cm,ca,cr,rr,pa}=P;const CF=R.CF||0;const sub=R.subvencion||0;
+  dl(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Resumen ${D.nombre||'OC'}</title><script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script><style>body{font-family:'Segoe UI',sans-serif;color:#1A2B2A;padding:24px;max-width:850px;margin:0 auto}h1{color:#0B7A6E;text-align:center;font-size:1.4rem}.sub{text-align:center;color:#8FA5A2;font-size:.85rem;margin-bottom:20px}.hero{background:linear-gradient(135deg,#06574E,#0B7A6E);color:#fff;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px}.hero .amt{font-size:2.6rem;font-weight:900;margin:6px 0}.hero .lbl{font-size:.85rem;opacity:.8}.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}.cb{background:#F4F1EB;border:1px solid #DDE5E3;border-radius:12px;padding:16px}.cb h3{text-align:center;font-size:.88rem;color:#06574E;margin-bottom:8px}canvas{max-height:260px}.mets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.m{background:#F4F1EB;border:1px solid #DDE5E3;border-radius:8px;padding:10px;text-align:center}.m .v{font-size:1.1rem;font-weight:800;color:#0B7A6E}.m .l{font-size:.68rem;color:#8FA5A2}.foot{margin-top:20px;text-align:center;font-size:.7rem;color:#C2D1CF;border-top:2px solid #0B7A6E;padding-top:10px}@media(max-width:600px){.charts,.mets{grid-template-columns:1fr}}</style></head><body><h1>📊 Resumen Visual – Cuota Familiar</h1><div class="sub">${D.nombre||'Organización Comunal'} · ${D.cp||''} · ${D.anio||'2025'}</div><div class="hero"><div class="lbl">Cuota Familiar Mensual</div><div class="amt">S/ ${CF.toFixed(2)}</div><div class="lbl">por asociado · Subvención: ${sub.toFixed(1)}%</div></div><div class="mets"><div class="m"><div class="l">Presupuesto Total</div><div class="v">S/ ${pa.toFixed(2)}</div></div><div class="m"><div class="l">💧 Cuota Familiar</div><div class="v">S/ ${P.totalCuota.toFixed(2)}</div></div><div class="m"><div class="l">🤝 Aportes</div><div class="v" style="color:#E8982D">S/ ${P.totalAporte.toFixed(2)}</div></div></div><div class="charts"><div class="cb"><h3>Distribución de Costos</h3><canvas id="c1"></canvas></div><div class="cb"><h3>Financiamiento</h3><canvas id="c2"></canvas></div><div class="cb"><h3>Costos por Categoría</h3><canvas id="c3"></canvas></div><div class="cb"><h3>% de cada sol de tu cuota</h3><canvas id="c4"></canvas></div></div><div class="foot">💧 Mi Cuota Familiar · Metodología SUNASS RCD N° 028-2018-SUNASS-CD</div><script>const C=['#0B7A6E','#E8982D','#8E44AD','#2980B9','#1CA676'];new Chart(document.getElementById('c1'),{type:'doughnut',data:{labels:['Operación','Mantenimiento','Administración','Reposición','Reserva'],datasets:[{data:[${co},${cm},${ca},${cr},${rr}],backgroundColor:C,borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{position:'bottom'}}}});new Chart(document.getElementById('c2'),{type:'pie',data:{labels:['Cuota Familiar','Aportes Externos'],datasets:[{data:[${P.totalCuota},${P.totalAporte}],backgroundColor:['#0B7A6E','#E8982D'],borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{position:'bottom'}}}});new Chart(document.getElementById('c3'),{type:'bar',data:{labels:['Operación','Mantenim.','Admin.','Reposic.','Reserva'],datasets:[{label:'S/',data:[${co},${cm},${ca},${cr},${rr}],backgroundColor:C,borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'S/'+v}}}}});const p=${pa}||1;new Chart(document.getElementById('c4'),{type:'doughnut',data:{labels:['Operación','Mantenimiento','Administración','Reposición','Reserva'],datasets:[{data:[${((co/pa)*100).toFixed(1)},${((cm/pa)*100).toFixed(1)},${((ca/pa)*100).toFixed(1)},${((cr/pa)*100).toFixed(1)},${((rr/pa)*100).toFixed(1)}],backgroundColor:C,borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>c.label+': '+c.parsed.toFixed(1)+'%'}}}}});<\/script></body></html>`,`Resumen_Visual_${D.nombre||'OC'}_${D.anio||'2025'}.html`);
+}
+
+function dl(c,f){const b=new Blob([c],{type:'text/html;charset=utf-8'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=f;a.click();URL.revokeObjectURL(u);}
+
+function numWords(n){
+  const e=Math.floor(n);
+  const u=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
+  const esp=['diez','once','doce','trece','catorce','quince'];
+  const dec=['','diez','veinte','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
+  const cen=['','ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'];
+  if(e===0)return'cero';if(e===100)return'cien';
+  let r='';
+  if(e>=100)r+=cen[Math.floor(e/100)]+' ';
+  const x=e%100;
+  if(x>=1&&x<=9)r+=u[x];
+  else if(x>=10&&x<=15)r+=esp[x-10];
+  else if(x>=16&&x<=19)r+='dieci'+u[x-10];
+  else if(x===20)r+='veinte';
+  else if(x>=21&&x<=29)r+='veinti'+u[x-20];
+  else if(x>=30){r+=dec[Math.floor(x/10)];if(x%10>0)r+=' y '+u[x%10];}
+  return r.trim();
+}
+
+// ===== INIT =====
+initActivities();
+</script>
+</body>
+</html>
